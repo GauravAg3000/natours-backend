@@ -116,6 +116,10 @@ const tourSchema = new mongoose.Schema(
   }
 );
 
+// tourSchema.index({ price: 1 });
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+
 // CREATING A VIRTUAL PROPERTY (FIELD)
 tourSchema.virtual("durationWeeks").get(function () {
   if (this.duration) return +(this.duration / 7).toFixed(2);
