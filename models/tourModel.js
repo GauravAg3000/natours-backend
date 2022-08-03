@@ -68,7 +68,7 @@ const tourSchema = new mongoose.Schema(
       type: String,
       required: [true, "A tour must have a `cover image`"],
     },
-    image: [String],
+    images: [String],
     createdAt: {
       type: Date,
       default: Date.now,
@@ -146,11 +146,6 @@ tourSchema.pre("save", function (next) {
 //   next();
 // });
 
-// tourSchema.post("save", function (doc, next) {
-//   console.log(doc);
-//   next();
-// });
-
 //QUERY MIDDLEWARE
 tourSchema.pre(/^find/, function (next) {
   this.find({ secretTour: { $ne: true } });
@@ -165,11 +160,6 @@ tourSchema.pre(/^find/, function (next) {
 
   next();
 });
-
-// tourSchema.post(/^find/, function (docs, next) {
-//   console.log(docs);
-//   next();
-// });
 
 //AGGREGATION MIDDLEWARE
 tourSchema.pre("aggregate", function (next) {

@@ -2,30 +2,35 @@ const catchAsync = require("../utils/catchAsync");
 const AppError = require("../utils/appError");
 const APIFeatures = require("../utils/apiFeatures");
 
-exports.deleteOne = (Model) =>
+exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndDelete(req.params.id);
+    let filter = {};
+    if (req.params.tourId) filter = { tour: req.params.tourId };
 
-    if (!doc) {
-      const err = new AppError(
-        `No document find with id: ${req.params.id}`,
-        404
-      );
-      return next(err);
-    }
+    const features = new APIFeatures(Model.find(filter), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
-    res.status(204).json({
+    // const tours = await features.query.explain();
+    const tours = await features.query;
+
+    res.status(200).json({
       status: "success",
-      data: null,
+      results: tours.length,
+      data: {
+        tours,
+      },
     });
   });
 
-exports.updateOne = (Model) =>
+exports.getOne = (Model, populateOptions) =>
   catchAsync(async (req, res, next) => {
-    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    let query = Model.findById(req.params.id);
+    if (populateOptions) query = query.populate(populateOptions);
+
+    const doc = await query;
 
     if (!doc) {
       const err = new AppError(
@@ -55,12 +60,12 @@ exports.createOne = (Model) =>
     });
   });
 
-exports.getOne = (Model, populateOptions) =>
+exports.updateOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    let query = Model.findById(req.params.id);
-    if (populateOptions) query = query.populate(populateOptions);
-
-    const doc = await query;
+    const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
 
     if (!doc) {
       const err = new AppError(
@@ -78,25 +83,20 @@ exports.getOne = (Model, populateOptions) =>
     });
   });
 
-exports.getAll = (Model) =>
+exports.deleteOne = (Model) =>
   catchAsync(async (req, res, next) => {
-    let filter = {};
-    if (req.params.tourId) filter = { tour: req.params.tourId };
+    const doc = await Model.findByIdAndDelete(req.params.id);
 
-    const features = new APIFeatures(Model.find(filter), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
+    if (!doc) {
+      const err = new AppError(
+        `No document find with id: ${req.params.id}`,
+        404
+      );
+      return next(err);
+    }
 
-    // const tours = await features.query.explain();
-    const tours = await features.query;
-
-    res.status(200).json({
+    res.status(204).json({
       status: "success",
-      results: tours.length,
-      data: {
-        tours,
-      },
+      data: null,
     });
   });
